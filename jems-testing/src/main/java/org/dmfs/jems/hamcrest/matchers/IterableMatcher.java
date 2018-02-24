@@ -17,8 +17,12 @@
 
 package org.dmfs.jems.hamcrest.matchers;
 
+import org.dmfs.iterables.elementary.Seq;
+import org.dmfs.jems.iterable.decorators.Mapped;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
+import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 
 import java.util.ArrayList;
@@ -32,6 +36,11 @@ import java.util.List;
  */
 public final class IterableMatcher
 {
+
+    private IterableMatcher()
+    {
+    }
+
 
     /**
      * {@link Matcher} that matches when the provided matchers match with the actual {@link Iterable}s elements in the same order.
@@ -70,7 +79,39 @@ public final class IterableMatcher
     }
 
 
-    private IterableMatcher()
+    /**
+     * {@link Matcher} that matches when the provided matchers match with the actual {@link Iterable}s elements in any order.
+     */
+    @Factory
+    public static <E> Matcher<Iterable<? extends E>> iteratesUnordered(Iterable<Matcher<E>> itemMatchers)
     {
+        List<Matcher<? super E>> matchers = new ArrayList<>();
+        for (Matcher<E> itemMatcher : itemMatchers)
+        {
+            matchers.add(itemMatcher);
+        }
+        return new IsIterableContainingInAnyOrder<E>(matchers);
+    }
+
+
+    /**
+     * {@link Matcher} that matches when the actual {@link Iterable} iterates the provided items in any order.
+     */
+    @SafeVarargs
+    @Factory
+    public static <E> Matcher<Iterable<? extends E>> iteratesUnordered(E... items)
+    {
+        return iteratesUnordered(new Mapped<>(CoreMatchers::is, new Seq<>(items)));
+    }
+
+
+    /**
+     * {@link Matcher} that matches when the provided item matchers match the actual {@link Iterable}s elements in any order.
+     */
+    @SafeVarargs
+    @Factory
+    public static <E> Matcher<Iterable<? extends E>> iteratesUnordered(Matcher<E>... itemMatchers)
+    {
+        return iteratesUnordered(new Seq<>(itemMatchers));
     }
 }
